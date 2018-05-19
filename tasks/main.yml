@@ -1,0 +1,57 @@
+---    
+- name: Apt install deps for openconnect GlobalProtect
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - build-essential 
+    - gettext 
+    - autoconf 
+    - automake 
+    - libproxy-dev 
+    - libxml2-dev 
+    - libtool 
+    - vpnc-scripts 
+    - pkg-config
+    - libgnutls-dev
+    - git
+
+- name: Git checkout openconnect GlobalProtect
+  git:
+    update:         yes
+    accept_hostkey: yes
+    #repo:           'ssh://git@github.com/dlenski/openconnect.git'
+    repo:           'https://github.com/dlenski/openconnect.git'
+    dest:           '/root/openconnect'
+    version:        'f509462' # may 9, 2018
+
+- name: Run autogen.sh
+  shell: ./autogen.sh
+  args:
+    chdir:   '/root/openconnect'
+    creates: '/root/openconnect/configure'
+
+- name: Run configure
+  shell: ./configure
+  args:
+    chdir:   '/root/openconnect'
+    creates: '/root/openconnect/Makefile'
+
+- name: Check if openconnect installed
+  shell: which openconnect
+  register: which_openconnect
+  ignore_errors: True
+  changed_when: False
+
+- name: make and install
+  shell: |
+    make
+    make install && ldconfig
+  args:
+    chdir:   '/root/openconnect'
+  when: ( which_openconnect.rc > 0 )
+
+- debug:
+    msg: |
+      Usage- 
+        openconnect --protocol=gp server.company.com --dump -vvv
