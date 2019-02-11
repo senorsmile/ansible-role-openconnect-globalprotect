@@ -13,8 +13,29 @@
     - libtool 
     - vpnc-scripts 
     - pkg-config
-    - libgnutls-dev
     - git
+
+- name: Apt install more deps for openconnect GlobalProtect
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libgnutls-dev
+  when:
+    ansible_distribution == 'Ubuntu'
+    and
+    ansible_distribution_version == '16.04'
+
+- name: Apt install more deps for openconnect GlobalProtect
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libgnutls28-dev
+  when:
+    ansible_distribution == 'Ubuntu'
+    and
+    ansible_distribution_version == '18.04'
 
 - name: Git checkout openconnect GlobalProtect
   git:
